@@ -11,10 +11,11 @@ export default function Subscribe() {
 
   const handleSubscribe = (plan) => {
     if (plan.id === 'free') {
-      const tp = window.tp || [];
-      tp.push(['init', function () {
-        window.tp?.pianoId?.show?.({ screen: 'register', displayMode: 'modal' });
-      }]);
+      if (typeof window !== 'undefined' && window.tp) {
+        window.tp.push(['init', function () {
+          window.tp.pianoId.show({ screen: 'register', displayMode: 'modal' });
+        }]);
+      }
       return;
     }
     const tp = window.tp || [];

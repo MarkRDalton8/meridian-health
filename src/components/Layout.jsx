@@ -55,25 +55,30 @@ export default function Layout({ children }) {
   }, []);
 
   const handleLogin = () => {
-    const tp = window.tp || [];
-    tp.push(['init', function () {
-      window.tp.pianoId.show({
-        screen: 'login',
-        displayMode: 'modal',
-        loggedIn: function (data) {
-          try { window.tp.pianoId.hide(); } catch (e) {}
-          setIsLoggedIn(true);
-          setUserName(
-            `${data.user.given_name || ''} ${data.user.family_name || ''}`.trim() || data.user.email
-          );
-          navigate('/account');
-        },
-      });
-    }]);
+    if (typeof window !== 'undefined' && window.tp) {
+      window.tp.push(['init', function () {
+        window.tp.pianoId.show({
+          screen: 'register',
+          displayMode: 'modal',
+          loggedIn: function (data) {
+            try { window.tp.pianoId.hide(); } catch (e) {}
+            setIsLoggedIn(true);
+            setUserName(
+              `${data.user.given_name || ''} ${data.user.family_name || ''}`.trim() || data.user.email
+            );
+            navigate('/account');
+          },
+        });
+      }]);
+    } else {
+      setTimeout(handleLogin, 200);
+    }
   };
 
   const handleLogout = () => {
-    if (window.tp) window.tp.pianoId?.logout?.();
+    if (typeof window !== 'undefined' && window.tp) {
+      window.tp.pianoId.logout();
+    }
     setIsLoggedIn(false);
     setUserName('');
     navigate('/');
