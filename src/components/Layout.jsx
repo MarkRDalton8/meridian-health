@@ -18,67 +18,50 @@ export default function Layout({ children }) {
     }
   }, [location.pathname]);
 
-  // Piano ID callbacks + session restore
+  // Piano ID: register handlers, restore session on mount
   useEffect(() => {
-    const setup = () => {
-      if (typeof window !== 'undefined' && window.tp) {
-        window.tp.push(['init', function () {
-          const user = window.tp.pianoId?.getUser?.();
-          if (user) {
-            setIsLoggedIn(true);
-            setUserName(
-              `${user.given_name || user.firstName || ''} ${user.family_name || user.lastName || ''}`.trim() || user.email
-            );
-          }
+    window.tp = window.tp || [];
 
-          window.tp.push(['addHandler', 'loginSuccess', function (data) {
-            setIsLoggedIn(true);
-            setUserName(
-              `${data.user.given_name || ''} ${data.user.family_name || ''}`.trim() || data.user.email
-            );
-          }]);
-
-          window.tp.push(['addHandler', 'checkoutComplete', function (data) {
-            sessionStorage.setItem('mhn_purchase', JSON.stringify({
-              termName: data.termName || '',
-              chargeAmount: data.chargeAmount || 0,
-              chargeCurrency: data.chargeCurrency || 'USD',
-            }));
-            navigate('/welcome');
-          }]);
-        }]);
-      } else {
-        setTimeout(setup, 100);
+    const applyUser = (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+        setUserName(
+          `${user.given_name || user.firstName || ''} ${user.family_name || user.lastName || ''}`.trim() || user.email
+        );
       }
     };
-    setup();
+
+    window.tp.push(['addHandler', 'loginSuccess', function (data) {
+      window.tp.pianoId.hide();
+      applyUser(data.user);
+    }]);
+
+    window.tp.push(['addHandler', 'checkoutComplete', function (data) {
+      sessionStorage.setItem('mhn_purchase', JSON.stringify({
+        termName: data.termName || '',
+        chargeAmount: data.chargeAmount || 0,
+        chargeCurrency: data.chargeCurrency || 'USD',
+      }));
+      navigate('/welcome');
+    }]);
+
+    // Restore session once Piano initializes
+    window.tp.push(['init', function () {
+      applyUser(window.tp.pianoId.getUser());
+    }]);
+
+    // Also poll in case Piano was already initialized before this ran
+    const t1 = setTimeout(() => applyUser(window.tp?.pianoId?.getUser?.()), 200);
+    const t2 = setTimeout(() => applyUser(window.tp?.pianoId?.getUser?.()), 800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   const handleLogin = () => {
-    if (typeof window !== 'undefined' && window.tp) {
-      window.tp.push(['init', function () {
-        window.tp.pianoId.show({
-          screen: 'register',
-          displayMode: 'modal',
-          loggedIn: function (data) {
-            try { window.tp.pianoId.hide(); } catch (e) {}
-            setIsLoggedIn(true);
-            setUserName(
-              `${data.user.given_name || ''} ${data.user.family_name || ''}`.trim() || data.user.email
-            );
-            navigate('/account');
-          },
-        });
-      }]);
-    } else {
-      setTimeout(handleLogin, 200);
-    }
+    window.tp?.pianoId?.show({ screen: 'login', displayMode: 'modal' });
   };
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined' && window.tp) {
-      window.tp.pianoId.logout();
-    }
+    if (window.tp?.pianoId) window.tp.pianoId.logout();
     setIsLoggedIn(false);
     setUserName('');
     navigate('/');

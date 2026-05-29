@@ -11,11 +11,7 @@ export default function Subscribe() {
 
   const handleSubscribe = (plan) => {
     if (plan.id === 'free') {
-      if (typeof window !== 'undefined' && window.tp) {
-        window.tp.push(['init', function () {
-          window.tp.pianoId.show({ screen: 'register', displayMode: 'modal' });
-        }]);
-      }
+      window.tp?.pianoId?.show({ screen: 'register', displayMode: 'modal' });
       return;
     }
     const tp = window.tp || [];

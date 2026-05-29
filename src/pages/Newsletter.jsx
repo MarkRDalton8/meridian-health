@@ -77,11 +77,7 @@ export default function Newsletter() {
             ) : (
               <button
                 onClick={() => {
-                  if (typeof window !== 'undefined' && window.tp) {
-                    window.tp.push(['init', function () {
-                      window.tp.pianoId.show({ screen: 'register', displayMode: 'modal' });
-                    }]);
-                  }
+                  window.tp?.pianoId?.show({ screen: 'register', displayMode: 'modal' });
                 }}
                 style={{ width: '100%', background: COLORS.primary, color: 'white', border: 'none', padding: '14px', borderRadius: 8, fontWeight: 800, fontSize: 15, cursor: 'pointer' }}
               >

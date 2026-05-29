@@ -10,24 +10,22 @@ export default function AccountPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const tp = window.tp || [];
-    tp.push(['setContentSection', 'account']);
-    tp.push(['init', function () {
-      const pianoUser = window.tp?.pianoId?.getUser?.();
+    window.tp = window.tp || [];
+    window.tp.push(['setContentSection', 'account']);
+    window.tp.push(['init', function () {
+      const pianoUser = window.tp.pianoId.getUser();
       if (!pianoUser) {
-        window.tp?.pianoId?.show?.({
-          screen: 'login',
-          displayMode: 'modal',
-          loggedIn: (data) => {
-            setUser(data.user);
-            loadSubscriptions();
-          },
-        });
+        window.tp.pianoId.show({ screen: 'login', displayMode: 'modal' });
       } else {
         setUser(pianoUser);
         loadSubscriptions();
       }
-      window.tp?.experience?.execute?.();
+      window.tp.experience.execute();
+    }]);
+
+    window.tp.push(['addHandler', 'loginSuccess', function (data) {
+      setUser(data.user);
+      loadSubscriptions();
     }]);
   }, []);
 
